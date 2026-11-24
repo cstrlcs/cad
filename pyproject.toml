@@ -1,0 +1,10 @@
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["COM812", "CPY001", "D", "RUF005", "TC"]

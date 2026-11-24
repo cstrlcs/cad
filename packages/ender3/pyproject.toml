@@ -1,0 +1,18 @@
+[project]
+name = "ender3-cad"
+version = "0.1.0"
+description = "Upgrades and an acrylic enclosure for the Creality Ender 3 Pro"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "bd-warehouse>=0.4.0",
+    "build123d>=0.13.0",
+    "ocp-vscode>=4.2.0",
+]
+
+[project.scripts]
+ender3-cad = "ender3_cad:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"

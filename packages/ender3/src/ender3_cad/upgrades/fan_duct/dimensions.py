@@ -1,0 +1,28 @@
+from math import cos, radians, sin
+
+from build123d import Plane, Pos, Vector
+
+from ender3_cad.ender3.purchased.blower_5015 import BLOWER_5015_THICKNESS
+from ender3_cad.ender3.reference.components.dimensions import FAN_4010_THICKNESS
+from ender3_cad.ender3.reference.print_head.dimensions import HEAT_BLOCK_LOCATION, HOTEND_AXIS_X, HOTEND_AXIS_Y
+
+MEASURED_NOZZLE_LENGTH_BELOW_HEAT_BLOCK = 8.86
+MEASURED_NOZZLE_TIP_Z = HEAT_BLOCK_LOCATION.position.Z - MEASURED_NOZZLE_LENGTH_BELOW_HEAT_BLOCK
+MEASURED_NOZZLE_TIP = Vector(HOTEND_AXIS_X, HOTEND_AXIS_Y, MEASURED_NOZZLE_TIP_Z)
+
+
+FAN_TILT = 30.0
+FLANGE_INWARD = Vector(0, cos(radians(FAN_TILT)), -sin(radians(FAN_TILT)))
+
+FLANGE_CENTER = Vector(HOTEND_AXIS_X, -90.2, 273.1)
+FLANGE_PLANE = Plane(origin=tuple(FLANGE_CENTER), x_dir=(1, 0, 0), z_dir=tuple(FLANGE_INWARD))
+HOTEND_FAN_LOCATION = FLANGE_PLANE.location * Pos(0, 0, -FAN_4010_THICKNESS)
+
+SOCKET_CENTER_DOWN = 28.4
+
+SOCKET_DEPTH = 6.0
+
+BLOWER_FACE_DOWN = SOCKET_CENTER_DOWN - BLOWER_5015_THICKNESS / 2
+
+ARM_SIZE = 12.0
+ARM_SIDE_X_OFFSET = 26.0
