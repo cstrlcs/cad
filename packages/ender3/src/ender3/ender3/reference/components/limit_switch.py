@@ -1,0 +1,85 @@
+from build123d import Cylinder, Part, Polygon, Pos, RectangleRounded, extrude
+
+from ender3.construction import block
+from ender3.dimensions import BOTTOM
+
+LIMIT_SWITCH_BOARD_WIDTH = 20.0
+LIMIT_SWITCH_BOARD_THICKNESS = 2.0
+LIMIT_SWITCH_BOARD_CORNER_RADIUS = 2.0
+LIMIT_SWITCH_MOUNTING_HOLE_DIAMETER = 3.1
+LIMIT_SWITCH_MOUNTING_HOLES = [(7.0, -7.5), (7.0, 7.5)]
+LIMIT_SWITCH_BODY_X_RANGE = (-11.0, -4.5)
+LIMIT_SWITCH_BODY_Y_RANGE = (-5.0, 8.0)
+LIMIT_SWITCH_BODY_TOP = 8.0
+LIMIT_SWITCH_PLUNGER_BLOCK_X_RANGE = (-4.5, -0.5)
+LIMIT_SWITCH_PLUNGER_BLOCK_Y_RANGE = (-4.379, 7.221)
+LIMIT_SWITCH_PLUNGER_BLOCK_TOP = 6.0
+LIMIT_SWITCH_RIVET_DIAMETER = 3.1
+LIMIT_SWITCH_RIVET_TOP = 9.0
+LIMIT_SWITCH_RIVETS = [(-5.5, 4.5), (-5.308, -2.5)]
+LIMIT_SWITCH_LEVER_OUTLINE = [(-11.0, -4.0), (-11.0, -3.5553), (-13.9026, 9.0225), (-14.0, 9.0)]
+LIMIT_SWITCH_LEVER_Z_RANGE = (3.0, 7.0)
+LIMIT_SWITCH_COMPONENT_X_RANGE = (0.0, 4.0)
+LIMIT_SWITCH_COMPONENT_Y_RANGE = (6.521, 9.0)
+LIMIT_SWITCH_COMPONENT_TOP = 3.0
+LIMIT_SWITCH_CONNECTOR_X_RANGE = (5.0, 12.0)
+LIMIT_SWITCH_CONNECTOR_Y_RANGE = (-5.0, 5.0)
+LIMIT_SWITCH_CONNECTOR_TOP = 8.0
+LIMIT_SWITCH_CONNECTOR_WALL = 0.7
+LIMIT_SWITCH_SWITCH_PINS_X_RANGE = (-4.0, -1.0)
+LIMIT_SWITCH_SWITCH_PINS_Y_RANGE = (-5.0, 7.5)
+LIMIT_SWITCH_CONNECTOR_PINS_X_RANGE = (4.0, 6.0)
+LIMIT_SWITCH_CONNECTOR_PINS_Y_RANGE = (-3.5, 3.5)
+LIMIT_SWITCH_PIN_LENGTH = 2.0
+LIMIT_SWITCH_PEG_DIAMETER = 2.0
+LIMIT_SWITCH_PEG_LENGTH = 1.0
+LIMIT_SWITCH_PEGS = [(-6.0, -1.5), (-6.0, 5.0)]
+
+
+def limit_switch() -> Part:
+    board_top = LIMIT_SWITCH_BOARD_THICKNESS
+    wall = LIMIT_SWITCH_CONNECTOR_WALL
+    (connector_x0, connector_x1), (connector_y0, connector_y1) = (
+        LIMIT_SWITCH_CONNECTOR_X_RANGE,
+        LIMIT_SWITCH_CONNECTOR_Y_RANGE,
+    )
+    lever_bottom, lever_top = LIMIT_SWITCH_LEVER_Z_RANGE
+    pin_z_range = (-LIMIT_SWITCH_PIN_LENGTH, 0)
+    switch = extrude(
+        RectangleRounded(LIMIT_SWITCH_BOARD_WIDTH, LIMIT_SWITCH_BOARD_WIDTH, LIMIT_SWITCH_BOARD_CORNER_RADIUS),
+        LIMIT_SWITCH_BOARD_THICKNESS,
+    )
+    for x, y in LIMIT_SWITCH_MOUNTING_HOLES:
+        switch -= Pos(x, y, 0) * Cylinder(LIMIT_SWITCH_MOUNTING_HOLE_DIAMETER / 2, board_top, align=BOTTOM)
+    switch += block(LIMIT_SWITCH_BODY_X_RANGE, LIMIT_SWITCH_BODY_Y_RANGE, (board_top, LIMIT_SWITCH_BODY_TOP))
+    switch += block(
+        LIMIT_SWITCH_PLUNGER_BLOCK_X_RANGE,
+        LIMIT_SWITCH_PLUNGER_BLOCK_Y_RANGE,
+        (board_top, LIMIT_SWITCH_PLUNGER_BLOCK_TOP),
+    )
+    for x, y in LIMIT_SWITCH_RIVETS:
+        switch += Pos(x, y, LIMIT_SWITCH_BODY_TOP) * Cylinder(
+            LIMIT_SWITCH_RIVET_DIAMETER / 2, LIMIT_SWITCH_RIVET_TOP - LIMIT_SWITCH_BODY_TOP, align=BOTTOM
+        )
+    switch += Pos(0, 0, lever_bottom) * extrude(
+        Polygon(*LIMIT_SWITCH_LEVER_OUTLINE, align=None), lever_top - lever_bottom
+    )
+    switch += block(
+        LIMIT_SWITCH_COMPONENT_X_RANGE, LIMIT_SWITCH_COMPONENT_Y_RANGE, (board_top, LIMIT_SWITCH_COMPONENT_TOP)
+    )
+    switch += block(
+        LIMIT_SWITCH_CONNECTOR_X_RANGE, LIMIT_SWITCH_CONNECTOR_Y_RANGE, (board_top, LIMIT_SWITCH_CONNECTOR_TOP)
+    )
+    switch -= block(
+        (connector_x0 + wall, connector_x1),
+        (connector_y0 + wall, connector_y1 - wall),
+        (board_top + wall, LIMIT_SWITCH_CONNECTOR_TOP - wall),
+    )
+    switch += block(LIMIT_SWITCH_SWITCH_PINS_X_RANGE, LIMIT_SWITCH_SWITCH_PINS_Y_RANGE, pin_z_range)
+    switch += block(LIMIT_SWITCH_CONNECTOR_PINS_X_RANGE, LIMIT_SWITCH_CONNECTOR_PINS_Y_RANGE, pin_z_range)
+    for x, y in LIMIT_SWITCH_PEGS:
+        switch += Pos(x, y, -LIMIT_SWITCH_PEG_LENGTH) * Cylinder(
+            LIMIT_SWITCH_PEG_DIAMETER / 2, LIMIT_SWITCH_PEG_LENGTH, align=BOTTOM
+        )
+    switch.label = "limit_switch"
+    return switch

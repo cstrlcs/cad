@@ -1,0 +1,79 @@
+from build123d import Axis, Part, Plane, Polygon, Pos, Rectangle, ShapeList, Sketch, Vertex, extrude, fillet, mirror
+
+from ender3.ender3.reference.construction import circles
+from ender3.ender3.reference.y_axis.dimensions import (
+    BED_CARRIAGE_PLATE_BOTTOM_Z,
+    BED_CARRIAGE_PLATE_ECCENTRIC_SPACER_HOLE_OFFSETS,
+    BED_CARRIAGE_PLATE_SIZE,
+    BED_CARRIAGE_PLATE_THICKNESS,
+    BED_CARRIAGE_PLATE_WHEEL_AXLE_HOLE_OFFSETS,
+    BED_CENTER_X,
+    BED_CENTER_Y,
+    BED_LEVELING_HOLE_OFFSETS,
+)
+
+BED_CARRIAGE_PLATE_SIDE_SCALLOP_RADIUS = 140.0
+BED_CARRIAGE_PLATE_SIDE_SCALLOP_CENTER_X = 213.21590418
+BED_CARRIAGE_PLATE_SIDE_SCALLOP_BLEND_RADIUS = 20.0
+BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y = 45.0
+BED_CARRIAGE_PLATE_FRONT_NOTCH = [
+    (-50.57139027, -BED_CARRIAGE_PLATE_SIZE / 2),
+    (-30.31779008, -BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (30.31779008, -BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (50.57139027, -BED_CARRIAGE_PLATE_SIZE / 2),
+]
+BED_CARRIAGE_PLATE_REAR_NOTCH = [
+    (-59.0, BED_CARRIAGE_PLATE_SIZE / 2),
+    (-46.5, BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (18.5, BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (31.0, BED_CARRIAGE_PLATE_SIZE / 2),
+]
+BED_CARRIAGE_PLATE_CORNER_AND_NOTCH_RADIUS = 10.0
+BED_CARRIAGE_PLATE_FRONT_BELT_SLOT = [
+    (5.0, -BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (7.5, -BED_CARRIAGE_PLATE_NOTCH_BOTTOM_Y),
+    (7.5, -37.5),
+    (-3.5, -37.5),
+    (-3.5, -40.0),
+    (5.0, -40.0),
+]
+BED_CARRIAGE_PLATE_BELT_SLOT_ZONE_X_RANGE = (-10.0, 10.0)
+BED_CARRIAGE_PLATE_BELT_SLOT_CORNER_RADIUS = 0.5
+BED_CARRIAGE_PLATE_WHEEL_AXLE_HOLE_DIAMETER = 5.1
+BED_CARRIAGE_PLATE_ECCENTRIC_SPACER_HOLE_DIAMETER = 7.2
+BED_CARRIAGE_PLATE_BED_MOUNT_HOLE_DIAMETER = 4.2
+
+BED_CARRIAGE_PLATE_LOCATION = Pos(BED_CENTER_X, BED_CENTER_Y, BED_CARRIAGE_PLATE_BOTTOM_Z)
+
+
+def _scallop_ends(outline: Sketch) -> ShapeList[Vertex]:
+    sides = outline.vertices().group_by(Axis.X)
+    return sides[0].sort_by(Axis.Y)[1:-1] + sides[-1].sort_by(Axis.Y)[1:-1]
+
+
+def bed_carriage_plate() -> Part:
+    front_belt_slot = Polygon(*BED_CARRIAGE_PLATE_FRONT_BELT_SLOT)
+    outline = (
+        Rectangle(BED_CARRIAGE_PLATE_SIZE, BED_CARRIAGE_PLATE_SIZE)
+        - circles(
+            [(side * BED_CARRIAGE_PLATE_SIDE_SCALLOP_CENTER_X, 0) for side in (-1, 1)],
+            2 * BED_CARRIAGE_PLATE_SIDE_SCALLOP_RADIUS,
+        )
+        - Polygon(*BED_CARRIAGE_PLATE_FRONT_NOTCH)
+        - Polygon(*BED_CARRIAGE_PLATE_REAR_NOTCH)
+    )
+    outline = fillet(outline.vertices() - _scallop_ends(outline), BED_CARRIAGE_PLATE_CORNER_AND_NOTCH_RADIUS)
+    outline = fillet(_scallop_ends(outline), BED_CARRIAGE_PLATE_SIDE_SCALLOP_BLEND_RADIUS)
+    outline = outline - front_belt_slot - mirror(front_belt_slot, Plane.XZ)
+    outline = fillet(
+        outline.vertices().filter_by_position(Axis.X, *BED_CARRIAGE_PLATE_BELT_SLOT_ZONE_X_RANGE),
+        BED_CARRIAGE_PLATE_BELT_SLOT_CORNER_RADIUS,
+    )
+    holes = (
+        circles(BED_CARRIAGE_PLATE_WHEEL_AXLE_HOLE_OFFSETS, BED_CARRIAGE_PLATE_WHEEL_AXLE_HOLE_DIAMETER)
+        + circles(BED_CARRIAGE_PLATE_ECCENTRIC_SPACER_HOLE_OFFSETS, BED_CARRIAGE_PLATE_ECCENTRIC_SPACER_HOLE_DIAMETER)
+        + circles(BED_LEVELING_HOLE_OFFSETS, BED_CARRIAGE_PLATE_BED_MOUNT_HOLE_DIAMETER)
+    )
+    plate = BED_CARRIAGE_PLATE_LOCATION * extrude(outline - holes, BED_CARRIAGE_PLATE_THICKNESS)
+    plate.label = "bed_carriage_plate"
+    return plate

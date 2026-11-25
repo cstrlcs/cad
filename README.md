@@ -16,7 +16,7 @@ Parametric 3D-printing models written in Python with [build123d](https://github.
 
 ```sh
 uv sync
-uv run ender3-cad
+uv run ender3
 uv run gridfinity
 ```
 

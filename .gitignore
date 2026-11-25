@@ -7,5 +7,5 @@ wheels/
 .venv
 .ruff_cache
 .DS_Store
-*.stl
-*.dxf
+stl
+dxf

@@ -4,7 +4,7 @@ requires-python = ">=3.14"
 
 [manifest]
 members = [
-    "ender3-cad",
+    "ender3",
     "gridfinity",
 ]
 
@@ -263,7 +263,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ender3-cad"
+name = "ender3"
 version = "0.1.0"
 source = { editable = "packages/ender3" }
 dependencies = [

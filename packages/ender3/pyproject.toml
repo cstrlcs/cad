@@ -1,5 +1,5 @@
 [project]
-name = "ender3-cad"
+name = "ender3"
 version = "0.1.0"
 description = "Upgrades and an acrylic enclosure for the Creality Ender 3 Pro"
 readme = "README.md"
@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ender3-cad = "ender3_cad:main"
+ender3 = "ender3:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]
